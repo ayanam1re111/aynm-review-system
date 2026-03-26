@@ -60,6 +60,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
+            <version>1.9.7</version> <!-- 必须指定版本 -->
         </dependency>
     </dependencies>
 
