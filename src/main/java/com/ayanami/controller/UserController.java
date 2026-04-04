@@ -1,9 +1,11 @@
 package com.ayanami.controller;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import com.ayanami.dto.LoginFormDTO;
 import com.ayanami.dto.Result;
 import com.ayanami.dto.UserDTO;
+import com.ayanami.entity.User;
 import com.ayanami.entity.UserInfo;
 import com.ayanami.service.IUserInfoService;
 import com.ayanami.service.IUserService;
@@ -79,5 +81,22 @@ public class UserController {
         info.setUpdateTime(null);
         // 返回
         return Result.ok(info);
+    }
+
+    /**
+     * 根据Id查用户
+     * @param userId
+     * @return
+     */
+    @GetMapping("/{id}")
+    public Result queryUserById(@PathVariable("id") Long userId){
+        // 查询详情
+        User user = userService.getById(userId);
+        if (user == null) {
+            return Result.ok();
+        }
+        UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
+        // 返回
+        return Result.ok(userDTO);
     }
 }
