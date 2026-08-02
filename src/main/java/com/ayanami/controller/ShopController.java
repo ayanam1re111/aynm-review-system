@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ayanami.dto.Result;
 import com.ayanami.entity.Shop;
+import com.ayanami.service.ISearchService;
 import com.ayanami.service.IShopService;
 import com.ayanami.utils.SystemConstants;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,9 @@ public class ShopController {
     @Resource
     public IShopService shopService;
 
+    @Resource
+    private ISearchService searchService;
+
     /**
      * 根据id查询商铺信息
      * @param id 商铺id
@@ -36,28 +40,30 @@ public class ShopController {
     }
 
     /**
-     * 新增商铺信息
-     * @param shop 商铺数据
-     * @return 商铺id
+     * 新增商铺信息。
      */
     @PostMapping
     public Result saveShop(@RequestBody Shop shop) {
         // 写入数据库
         shopService.save(shop);
+        // 同步到 ES 索引
+        searchService.saveDocument(shop);
         // 返回店铺id
         return Result.ok(shop.getId());
     }
 
     /**
-     * 更新商铺信息
-     * @param shop 商铺数据
-     * @return 无
+     * 更新商铺信息。
      */
     @PutMapping
     public Result updateShop(@RequestBody Shop shop) {
         // 写入数据库
-
-        return shopService.update(shop);
+        Result result = shopService.update(shop);
+        // 更新成功后同步 ES 索引
+        if (result.getSuccess()) {
+            searchService.saveDocument(shop);
+        }
+        return result;
     }
 
     /**

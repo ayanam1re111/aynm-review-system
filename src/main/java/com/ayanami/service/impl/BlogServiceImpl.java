@@ -13,6 +13,7 @@ import com.ayanami.mapper.BlogMapper;
 import com.ayanami.service.IBlogService;
 import com.ayanami.service.IFollowService;
 import com.ayanami.service.IUserService;
+import com.ayanami.service.UserBehaviorService;
 import com.ayanami.utils.RedisConstants;
 import com.ayanami.utils.SystemConstants;
 import com.ayanami.utils.UserHolder;
@@ -46,6 +47,8 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private IFollowService followService;
+    @Resource
+    private UserBehaviorService userBehaviorService;
 
     @Override
     public Result queryHotBlog(Integer current) {
@@ -77,6 +80,11 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         queryBlogUser(blog);
         //3.查询blog是否被点赞
         isBlogLiked(blog);
+        //4.记录浏览博客行为（未登录不记录）
+        UserDTO currentUser = UserHolder.getUser();
+        if(currentUser != null){
+            userBehaviorService.recordViewBlog(currentUser.getId(), id);
+        }
         return Result.ok(blog);
     }
 
@@ -125,6 +133,8 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
             //3.2.保存用户到Redis的set集合 zadd key value score
             if(isSuccess){
                 stringRedisTemplate.opsForZSet().add(key,userId.toString(),System.currentTimeMillis());
+                //3.3.记录点赞行为
+                userBehaviorService.recordLikeBlog(userId, id);
             }
         }else {
             //4.如果已点赞，取消点赞

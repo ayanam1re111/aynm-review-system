@@ -94,6 +94,25 @@ class AynmReviewSystemApplicationTests {
             }
 
     }
+    @Test
+    void testHyperLogLog(){
+        //准备数据，装存储到HLL的数据
+        String[] values=new String[1000];
+        int j=0;
+        for(int i=0;i<10000;i++){
+            j=i%1000;
+            values[j]="user_"+i;
+            if(j==999){
+                //发送到redis
+                stringRedisTemplate.opsForHyperLogLog().add("hl2",values);
+            }
+
+        }
+        //统计数量
+        Long size = stringRedisTemplate.opsForHyperLogLog().size("hl2");
+        System.out.println("size="+size);
+
+    }
 
 
 

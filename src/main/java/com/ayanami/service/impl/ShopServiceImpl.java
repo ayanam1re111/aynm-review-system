@@ -5,12 +5,15 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.ayanami.dto.Result;
+import com.ayanami.dto.UserDTO;
 import com.ayanami.entity.Shop;
 import com.ayanami.mapper.ShopMapper;
 import com.ayanami.service.IShopService;
+import com.ayanami.service.UserBehaviorService;
 import com.ayanami.utils.CacheClient;
 import com.ayanami.utils.RedisData;
 import com.ayanami.utils.SystemConstants;
+import com.ayanami.utils.UserHolder;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ayanami.utils.RedisConstants;
@@ -49,6 +52,9 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     @Resource
     private CacheClient cacheClient;
 
+    @Resource
+    private UserBehaviorService userBehaviorService;
+
     /**
      * 查找以及缓存商铺
      * @param id
@@ -67,7 +73,12 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         if(shop==null){
             return Result.fail("店铺不存在");
         }
-        //7.返回
+        //7.记录浏览商铺行为（未登录不记录）
+        UserDTO user = UserHolder.getUser();
+        if(user != null){
+            userBehaviorService.recordViewShop(user.getId(), id);
+        }
+        //8.返回
         return Result.ok(shop);
     }
 

@@ -3,6 +3,7 @@ package com.ayanami.controller;
 
 import com.ayanami.dto.Result;
 import com.ayanami.service.IVoucherOrderService;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,5 +32,16 @@ public class VoucherOrderController {
     public Result seckillVoucher(@PathVariable("id") Long voucherId) {
 
         return voucherOrderService.seckillVoucher(voucherId);
+    }
+
+    /**
+     * 查询秒杀订单异步处理状态（PROCESSING / SUCCESS / FAILED）
+     * @param orderId 订单 ID（秒杀接口返回的 orderId）
+     * @return 订单处理状态
+     */
+    @GetMapping("status/{orderId}")
+    public Result queryOrderStatus(@PathVariable("orderId") Long orderId) {
+
+        return voucherOrderService.queryOrderStatus(orderId);
     }
 }

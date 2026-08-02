@@ -22,7 +22,7 @@ public class MvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        //登录拦截器
+        //登录拦截器（第二步执行，拦截未登录）
         registry.addInterceptor(new LoginInterceptor())
                 .excludePathPatterns(//排除某些路径
                         "/shop/**",
@@ -32,9 +32,13 @@ public class MvcConfig implements WebMvcConfigurer {
                         "/blog/hot",
                         "/user/code",
                         "/user/login",
-                        "/test/token-batch"
+                        "/test/token-batch",
+                        // 推荐/搜索支持未登录访问；重建索引由 admin-key 保护
+                        "/recommend/**",
+                        "/search/**",
+                        "/admin/search/**"
         ).order(1);
-        //token刷新拦截器
+        //token刷新拦截器（第一步执行，只负责刷新token时间，无论有无token都放行
         registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).order(0);//拦截所有请求
 
     }

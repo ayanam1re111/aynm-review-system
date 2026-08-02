@@ -21,18 +21,19 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
 
 
     //请求处理前
+    //目的：在请求进入业务代码前，刷新token，并把用户信息存入 ThreadLocal，供后续全链路无感知获取。
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //1.获取请求头中的token
         String token = request.getHeader("authorization");
-        if(StrUtil.isBlank(token)){
+        if(StrUtil.isBlank(token)){//请求头没有token，直接放行
            return true;}
 
         //2.基于token获取redis中的用户
         String key=RedisConstants.LOGIN_USER_KEY+token;
         Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(key);
         //3.判断用户是否存在
-        if(userMap.isEmpty()){
+        if(userMap.isEmpty()){//可能有之前残留旧token，但后端查不到这个token
            return true;//不存在，直接放行，不存信息
              }
         //5.将查询到的hash数据存储到UserDTO对象

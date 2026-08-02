@@ -26,7 +26,7 @@ public class CacheClient {
     private StringRedisTemplate stringRedisTemplate;
 
     /**
-     * 将java对象序列化到redis的string类型中，并指定TTL
+     * 将java对象序列化到redis的string类型中，并指定TTL（普通商品使用）
      * @param key
      * @param value
      * @param time
@@ -37,7 +37,7 @@ public class CacheClient {
     }
 
     /**
-     * 将java对象序列化到redis的string类型中，并指定逻辑TTL
+     * 将java对象序列化到redis的string类型中，并指定逻辑TTL（热点商品使用）
      * @param key
      * @param value
      * @param LogicalTTL 逻辑TTL

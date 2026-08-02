@@ -6,6 +6,7 @@ import com.ayanami.dto.UserDTO;
 import com.ayanami.entity.Follow;
 import com.ayanami.mapper.FollowMapper;
 import com.ayanami.service.IFollowService;
+import com.ayanami.service.UserBehaviorService;
 import com.ayanami.utils.UserHolder;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -31,6 +32,8 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private UserServiceImpl userService;
+    @Resource
+    private UserBehaviorService userBehaviorService;
     /**
      * 关注
      * @param followUserId
@@ -53,6 +56,8 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
             if(isSuccess){
                 //把关注用户的id，放入redis的set集合用于以后查交集得出共同关注 sadd userId followerUserId
                 stringRedisTemplate.opsForSet().add(key,followUserId.toString());
+                //记录关注行为
+                userBehaviorService.recordFollow(userId, followUserId);
             }
         }else{
             //3.取关，删除delete from tb_follow where user_id = ? and follow_user_id = ?

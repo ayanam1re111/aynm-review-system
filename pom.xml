@@ -88,6 +88,22 @@
         <artifactId>redisson</artifactId>
         <version>3.13.6</version>
     </dependency>
+        <!-- RabbitMQ：秒杀异步下单消息队列 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+        <!-- spring-rabbit 对 spring-retry 是 optional 依赖，必须显式引入才能启用 listener.simple.retry 消费者重试 -->
+        <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
+        </dependency>
+        <!-- Elasticsearch 商铺全文检索（版本与 Spring Boot 2.3.12 BOM 对齐的 7.6.x） -->
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>7.6.2</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -1,0 +1,64 @@
+{
+  "mappings": {
+    "properties": {
+      "shopId": {
+        "type": "long"
+      },
+      "name": {
+        "type": "text",
+        "analyzer": "standard",
+        "search_analyzer": "standard",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "typeId": {
+        "type": "long"
+      },
+      "typeName": {
+        "type": "keyword"
+      },
+      "address": {
+        "type": "text",
+        "analyzer": "standard",
+        "search_analyzer": "standard"
+      },
+      "area": {
+        "type": "keyword"
+      },
+      "score": {
+        "type": "integer"
+      },
+      "sold": {
+        "type": "integer"
+      },
+      "comments": {
+        "type": "integer"
+      },
+      "x": {
+        "type": "double"
+      },
+      "y": {
+        "type": "double"
+      },
+      "location": {
+        "type": "geo_point"
+      },
+      "images": {
+        "type": "keyword",
+        "ignore_above": 1024
+      },
+      "createTime": {
+        "type": "date",
+        "format": "yyyy-MM-dd HH:mm:ss||strict_date_optional_time||epoch_millis"
+      },
+      "updateTime": {
+        "type": "date",
+        "format": "yyyy-MM-dd HH:mm:ss||strict_date_optional_time||epoch_millis"
+      }
+    }
+  }
+}
