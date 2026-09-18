@@ -26,7 +26,7 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.unit.DistanceUnit;
-import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -83,9 +83,8 @@ public class ShopSearchServiceImpl implements ISearchService {
             throw new IllegalStateException("Elasticsearch 未启用或未配置，无法重建索引");
         }
         // 索引不存在则创建（含 mapping）
-        org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest existsRequest =
-                new org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest(indexName);
-        boolean exists = client.indices().exists(existsRequest, RequestOptions.DEFAULT);
+        boolean exists = client.indices().exists(
+                new org.elasticsearch.client.indices.GetIndexRequest(indexName), RequestOptions.DEFAULT);
         if (!exists) {
             String mappingJson = loadMappingJson();
             org.elasticsearch.action.admin.indices.create.CreateIndexRequest createRequest =

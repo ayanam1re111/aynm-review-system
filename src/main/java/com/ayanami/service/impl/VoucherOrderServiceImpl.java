@@ -20,6 +20,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -53,6 +54,10 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     @Autowired(required = false)
     private RabbitTemplate rabbitTemplate;
 
+    /** MQ 开关，对应 hm.mq.enabled，避免 Spring Boot 自动配置的 RabbitTemplate 让判空失效 */
+    @Value("${hm.mq.enabled:true}")
+    private boolean mqEnabled;
+
     private static final DefaultRedisScript<Long> SECKILL_SCRIPT;
     private static final DefaultRedisScript<Long> RECOVER_STOCK_SCRIPT;
 
@@ -72,7 +77,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     @Override
     public Result seckillVoucher(Long voucherId) {
         // MQ 未启用时直接提示
-        if (rabbitTemplate == null) {
+        if (!mqEnabled || rabbitTemplate == null) {
             return Result.fail("秒杀功能未启用（RabbitMQ 未配置）");
         }
         // 获取用户并生成订单 ID

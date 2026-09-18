@@ -3,11 +3,12 @@ package com.ayanami.service.impl;
 import com.ayanami.entity.Blog;
 import com.ayanami.entity.Shop;
 import com.ayanami.entity.Voucher;
-import com.ayanami.service.IBlogService;
-import com.ayanami.service.IShopService;
+import com.ayanami.mapper.BlogMapper;
+import com.ayanami.mapper.ShopMapper;
 import com.ayanami.service.IVoucherService;
 import com.ayanami.service.UserBehaviorService;
 import com.ayanami.utils.RedisConstants;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -33,10 +34,12 @@ public class UserBehaviorServiceImpl implements UserBehaviorService {
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+    // 这两个用 Mapper 而不是 Service：ShopServiceImpl 与 BlogServiceImpl 都反向依赖本类，
+    // 走 Service 会形成循环依赖（Spring Boot 2.6 起默认禁止）。本类只按 id 读取，用 Mapper 等价且无环。
     @Resource
-    private IShopService shopService;
+    private ShopMapper shopMapper;
     @Resource
-    private IBlogService blogService;
+    private BlogMapper blogMapper;
     @Resource
     private IVoucherService voucherService;
 
@@ -58,7 +61,7 @@ public class UserBehaviorServiceImpl implements UserBehaviorService {
         if (userId == null || blogId == null) {
             return;
         }
-        Long typeId = resolveBlogTypeId(blogService.getById(blogId));
+        Long typeId = resolveBlogTypeId(blogMapper.selectById(blogId));
         if (typeId == null) {
             return;
         }
@@ -71,7 +74,7 @@ public class UserBehaviorServiceImpl implements UserBehaviorService {
         if (userId == null || blogId == null) {
             return;
         }
-        Long typeId = resolveBlogTypeId(blogService.getById(blogId));
+        Long typeId = resolveBlogTypeId(blogMapper.selectById(blogId));
         if (typeId == null) {
             return;
         }
@@ -84,10 +87,10 @@ public class UserBehaviorServiceImpl implements UserBehaviorService {
             return;
         }
         // 按被关注用户最近发布的博客累计其类型兴趣
-        List<Blog> blogs = blogService.query().eq("user_id", followUserId)
+        List<Blog> blogs = blogMapper.selectList(new QueryWrapper<Blog>()
+                .eq("user_id", followUserId)
                 .orderByDesc("create_time")
-                .last("LIMIT 5")
-                .list();
+                .last("LIMIT 5"));
         for (Blog blog : blogs) {
             Long typeId = resolveBlogTypeId(blog);
             if (typeId != null) {
@@ -155,7 +158,7 @@ public class UserBehaviorServiceImpl implements UserBehaviorService {
         if (shopId == null) {
             return null;
         }
-        Shop shop = shopService.getById(shopId);
+        Shop shop = shopMapper.selectById(shopId);
         return shop == null ? null : shop.getTypeId();
     }
 

@@ -22,7 +22,7 @@ public class AdminSearchController {
     @Resource
     private ISearchService searchService;
 
-    @Value("${hm.search.admin-key:dev-admin-key}")
+    @Value("${hm.search.admin-key:}")
     private String adminKey;
 
     /**
@@ -30,7 +30,8 @@ public class AdminSearchController {
      */
     @PostMapping("/shop/rebuild")
     public Result rebuildShopIndex(@RequestHeader(value = "admin-key", required = false) String key) {
-        if (key == null || !adminKey.equals(key)) {
+        // adminKey 未配置时一律拒绝，避免空值把校验放空
+        if (adminKey == null || adminKey.isEmpty() || !adminKey.equals(key)) {
             return Result.fail("无权限，拒绝操作");
         }
         try {

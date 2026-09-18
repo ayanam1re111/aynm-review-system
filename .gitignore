@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### 本地敏感配置（含密码，不进仓库）###
+/config/local.yaml

@@ -3,15 +3,18 @@ server:
 spring:
   application:
     name: hmdp
+  # 敏感配置放在 config/local.yaml（已被 .gitignore 忽略），也可用同名环境变量覆盖
+  config:
+    import: optional:file:./config/local.yaml
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/hmdp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
-    password: 6513
+    username: ${MYSQL_USERNAME:}
+    password: ${MYSQL_PASSWORD:}
   redis:
-    host: 192.168.100.128
+    host: 127.0.0.1
     port: 6379
-    password: 651324
+    password: ${REDIS_PASSWORD:}
 #    连接池配置
     lettuce:
       pool:
@@ -21,6 +24,43 @@ spring:
         time-between-eviction-runs: 10s
   jackson:
     default-property-inclusion: non_null # JSON处理时忽略非空字段
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: ${RABBITMQ_USERNAME:}
+    password: ${RABBITMQ_PASSWORD:}
+    virtual-host: /
+    # 生产者确认与回退
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+    listener:
+      simple:
+        acknowledge-mode: auto
+        # 消费者重试 3 次，耗尽后进死信队列
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000
+          multiplier: 2
+          max-interval: 10000
+        default-requeue-rejected: false
+hm:
+  mq:
+    # 秒杀消息队列开关，未装 RabbitMQ 时置 false
+    enabled: true
+  es:
+    # ES 搜索开关，未装 ES 时置 false
+    enabled: true
+    host: http://127.0.0.1:9200
+    username: ${ES_USERNAME:}
+    password: ${ES_PASSWORD:}
+    # 商铺索引名称
+    index-name: shop_index
+  search:
+    # 索引重建接口的保护 key（仅开发环境），留空则接口拒绝所有请求
+    admin-key: ${SEARCH_ADMIN_KEY:}
 mybatis-plus:
   type-aliases-package: com.ayanami.entity  # 别名扫描包
   configuration:

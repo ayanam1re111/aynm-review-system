@@ -4,7 +4,6 @@ import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import com.ayanami.entity.Shop;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -13,11 +12,9 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-
-import static com.ayanami.utils.RedisConstants.CACHE_SHOP_KEY;
-import static com.ayanami.utils.RedisConstants.CACHE_SHOP_TTL;
 
 @Slf4j
 @Component
@@ -33,7 +30,10 @@ public class CacheClient {
      * @param unit
      */
     public void set(String key, Object value, Long time, TimeUnit unit){
-        stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(value),time,unit);
+        // TTL 加随机抖动，避免同一批写入的缓存同时过期、请求瞬间全压到数据库（缓存雪崩）
+        long ttlSeconds = unit.toSeconds(time);
+        long jitter = ThreadLocalRandom.current().nextLong(Math.max(1, ttlSeconds / 10) + 1);
+        stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(value), ttlSeconds + jitter, TimeUnit.SECONDS);
     }
 
     /**
@@ -183,7 +183,7 @@ public class CacheClient {
         //4.实现缓存重建
         //4.1.获取互斥锁
         String lockKey="lock:"+lockKeyPrefix+id;
-        R r= null;
+        R r;
         try {
             boolean isLock=tryLock(lockKey);
             //4.2.判断是否获取成功

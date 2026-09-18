@@ -10,7 +10,6 @@ import com.ayanami.service.UserBehaviorService;
 import com.ayanami.utils.UserHolder;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -81,7 +80,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
         //1.获取登录用户
         Long userId=UserHolder.getUser().getId();
          //2.查询是否关注
-        Integer count=query().eq("user_id",userId).eq("follow_user_id",followUserId).count();
+        Long count=query().eq("user_id",userId).eq("follow_user_id",followUserId).count();
          //3.判断
         return Result.ok(count>0);
     }

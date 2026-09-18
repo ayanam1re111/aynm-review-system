@@ -1,0 +1,23 @@
+# 本地敏感配置模板。
+# 使用方法：复制为同目录下的 local.yaml 并填入真实值（local.yaml 已被 .gitignore 忽略）。
+#   cp config/local.yaml.example config/local.yaml
+# 这些键由 src/main/resources/application.yaml 中的 ${...} 占位符引用，
+# 也可以改用同名环境变量提供，环境变量优先级更高。
+
+# MySQL
+MYSQL_USERNAME: ""
+MYSQL_PASSWORD: ""
+
+# Redis
+REDIS_PASSWORD: ""
+
+# RabbitMQ（未部署可留空，并把 hm.mq.enabled 置为 false）
+RABBITMQ_USERNAME: ""
+RABBITMQ_PASSWORD: ""
+
+# Elasticsearch（未部署可留空，并把 hm.es.enabled 置为 false）
+ES_USERNAME: ""
+ES_PASSWORD: ""
+
+# 索引重建接口 /admin/search/shop/rebuild 的请求头校验值，留空则接口不可用
+SEARCH_ADMIN_KEY: ""
