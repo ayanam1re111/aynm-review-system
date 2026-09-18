@@ -46,7 +46,7 @@ flowchart TD
     SVC --> D
 ```
 
-The system is split into an application layer and a data layer. The Controller layer only receives and forwards requests; business logic sits in the Service layer, which holds no state of its own — everything is stored in the four components below:
+The system is split into an application layer and a data layer. The Controller layer receives and forwards requests; business logic sits in the Service layer, which holds no state of its own — everything is stored in the four components below:
 
 - **Redis** — cache, distributed locks, flash-sale stock pre-deduction, user profile, GEO location index
 - **MySQL** — the business data store; orders and merchants are persisted here
@@ -90,7 +90,6 @@ The system is split into an application layer and a data layer. The Controller l
 - **Personalized recommendation** — Five behaviour signals (view, search, like, follow, order) build a Redis ZSet user profile, scored as interest 0.40 / popularity 0.25 / distance 0.20 / rating 0.10 / freshness 0.05; results are written to a ZSet cache for reuse, with a popular-merchant fallback for anonymous users.
 - **Cache penetration, breakdown and avalanche** — Null-value caching prevents penetration from repeated lookups of missing ids, a mutex rebuild prevents breakdown when a hot key expires and floods the database, and randomized TTLs keep large batches of keys from expiring at the same moment. A logical-expiration strategy is also implemented, with the mutex path currently wired into the request flow.
 - **Cache preheating** — On startup the application loads merchant coordinates into the Redis GEO index and warms the cache for the 100 best-selling merchants; failures are logged and do not block startup.
-- **Distributed locking and atomic deduction** — Redisson enforces one-order-per-user and idempotent order creation, while flash-sale stock is validated and deducted in a single Lua script on Redis.
 - **Nearby merchants** — Redis GEO radius search with paging, returning results ordered by distance with the distance value attached.
 
 <a name="env"></a>
