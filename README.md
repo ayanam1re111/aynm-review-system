@@ -85,13 +85,11 @@ The system is split into an application layer and a data layer. The Controller l
 
 ## 🔧 Technical Highlights
 
-- **Flash-sale pipeline** — A Lua script atomically validates and pre-deducts stock, and the order is then created asynchronously through RabbitMQ. The publisher waits for the broker confirm and restores the Redis stock when confirmation fails; the consumer enforces idempotency with a Redisson lock plus a database unique index, moves messages that still fail after 3 retries into a dead-letter queue, and an order status endpoint is provided.
+- **Flash-sale pipeline** — A Lua script atomically validates and pre-deducts stock, and the order is then created asynchronously through RabbitMQ. The publisher waits for the broker confirm and restores the Redis stock when confirmation fails; the consumer enforces one-order-per-user and idempotency with a Redisson lock plus a database unique index, moves messages that still fail after 3 retries into a dead-letter queue, and an order status endpoint is provided.
 - **Search pipeline** — Elasticsearch full-text search with name and address highlighting and distance sorting; merchant create or update syncs incrementally, and a full rebuild endpoint is available; when ES is unavailable the query falls back to the database so the API stays up.
 - **Personalized recommendation** — Five behaviour signals (view, search, like, follow, order) build a Redis ZSet user profile, scored as interest 0.40 / popularity 0.25 / distance 0.20 / rating 0.10 / freshness 0.05; results are written to a ZSet cache for reuse, with a popular-merchant fallback for anonymous users.
-- **Cache penetration, breakdown and avalanche** — Null-value caching prevents penetration from repeated lookups of missing ids, a mutex rebuild prevents breakdown when a hot key expires and floods the database, and randomized TTLs keep large batches of keys from expiring at the same moment. A logical-expiration strategy is also implemented, with the mutex path currently wired into the request flow.
-- **Cache preheating** — On startup the application loads merchant coordinates into the Redis GEO index and warms the cache for the 100 best-selling merchants; failures are logged and do not block startup.
-- **Distributed locking and atomic deduction** — Redisson enforces one-order-per-user and idempotent order creation, while flash-sale stock is validated and deducted in a single Lua script on Redis.
-- **Nearby merchants** — Redis GEO radius search with paging, returning results ordered by distance with the distance value attached.
+- **Cache penetration, breakdown and avalanche** — Null-value caching prevents penetration from repeated lookups of missing ids, a mutex rebuild prevents breakdown when a hot key expires and floods the database, and randomized TTLs keep large batches of keys from expiring at the same moment.
+- **Nearby merchants** — Redis GEO radius search with paging, ordered by distance with the distance value attached; the GEO index is preheated at startup so queries are not empty on a cold start.
 
 <a name="env"></a>
 
